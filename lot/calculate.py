@@ -14,7 +14,7 @@ def get_distance_matrix(
     model,
     model_input: str,
     answers: List[str],
-    trial_thoughts: List[Tuple[List[str], str, bool]],
+    trial_thoughts: List[Tuple[List[str], str, bool]],  # 思考トークン、答え、正解か
     default_distance: int = 10,
     debug: bool = False,
 ) -> np.ndarray:

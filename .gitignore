@@ -81,3 +81,5 @@ intro.sh
 demo.ipynb
 *.gif
 *.mp4
+
+demo_data/
