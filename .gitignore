@@ -51,6 +51,7 @@ results/
 
 dummy.py
 figures
+figures.*
 */__pycache__/
 
 semantic_entropy

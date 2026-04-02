@@ -16,6 +16,7 @@ DATASET_TYPES = {
     'aqua': 'json',
     'commonsenseqa': 'json',
     'strategyqa': 'json',
+    'quadratic': 'json',
 }
 
 # Dataset field mapping
@@ -43,6 +44,12 @@ DATASET_FIELDS = {
         'answer_field': 'answer',
         'options_format': lambda _: ["A. yes", "B. no"],
         'answer_format': lambda answer: "A" if answer else "B",
+    },
+    'quadratic': {
+        'question_field': 'question',
+        'options_field': 'options',
+        'answer_field': 'correct',
+        'explanation_field': 'rationale',
     },
 }
 

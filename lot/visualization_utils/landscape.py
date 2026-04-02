@@ -588,15 +588,20 @@ def load_landscape_data(
             "aqua": 6,
             "mmlu": 5,
             "strategyqa": 3,
-            "dummy": 6
+            "dummy": 6,
+            "quadratic": 6,
         }
         if distance_matrix.shape[1] != expected_dims.get(dataset):
             continue
 
         # 列0（質問との距離）を除外し、思考ステップ+質問アンカー1行だけ取り出す
         distance_matrix = distance_matrix[:num_all_thoughts+1, 1:]
+        # NaN を含む行を 0 で補完（パープレキシティ計算が失敗した行）
+        distance_matrix = np.nan_to_num(distance_matrix, nan=0.0)
         # 各行をL1正規化（回答への距離の合計を1にする）
-        distance_matrix = distance_matrix / np.linalg.norm(distance_matrix, axis=1, ord=1, keepdims=True)
+        row_norms = np.linalg.norm(distance_matrix, axis=1, ord=1, keepdims=True)
+        row_norms[row_norms == 0] = 1.0  # 全要素 0 の行でゼロ除算を防止
+        distance_matrix = distance_matrix / row_norms
         # 正解の列を先頭に移動（後段の処理で先頭列=正解として扱うため）
         distance_matrix = rearrange_columns(distance_matrix, gt_idx-1)
 

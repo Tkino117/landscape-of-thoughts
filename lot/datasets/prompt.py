@@ -194,6 +194,45 @@ Answer: Let's think step by step. """,
         "tot": """Question: {question}
 Your final answer should be in the format of 'The answer is (chosen multiple-choice option).
 Answer: Let's think step by step. """,
+    },
+    "quadratic": {
+        "cot": """Question: Solve the quadratic equation: x² - 6x + 8 = 0. What are the solutions?
+Options: (A) x = 2, x = 4, (B) x = -2, x = -4, (C) x = 3 ± i, (D) x = 1, x = 8, (E) x = 3 ± 2i.
+Answer: Let's think step by step. We can factor x² - 6x + 8 = (x - 2)(x - 4) = 0. Setting each factor to zero: x - 2 = 0 gives x = 2, and x - 4 = 0 gives x = 4. The answer is A.
+
+Question: Solve the quadratic equation: x² + 4x + 13 = 0. What are the solutions?
+Options: (A) x = -1, x = -13, (B) x = 2, x = -6, (C) x = -2 ± 3i, (D) x = -2 ± i, (E) x = -4 ± 3i.
+Answer: Let's think step by step. Using the quadratic formula with a=1, b=4, c=13: the discriminant is b² - 4ac = 16 - 52 = -36. Since the discriminant is negative, the solutions are complex: x = (-4 ± √(-36)) / 2 = (-4 ± 6i) / 2 = -2 ± 3i. The answer is C.
+
+Refer to the solution process of the above example to provide a step-by-step solution to the following problem. Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Q: {question}
+Answer: Let's think step by step.
+""",
+        "zero-shot-cot": """Question: {question}
+Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Answer: Let's think step by step. """,
+        "l2m": """Question: Solve the quadratic equation: x² - 6x + 8 = 0. What are the solutions?
+Options: (A) x = 2, x = 4, (B) x = -2, x = -4, (C) x = 3 ± i, (D) x = 1, x = 8, (E) x = 3 ± 2i.
+Answer: To answer the question "What are the solutions of x² - 6x + 8 = 0?", we need to know: "What are the coefficients a, b, c?", "What is the discriminant?", "What are the roots?".
+
+Q: What are the coefficients a, b, c?
+A: a = 1, b = -6, c = 8.
+
+Q: What is the discriminant?
+A: D = b² - 4ac = 36 - 32 = 4. Since D > 0, there are two distinct real roots.
+
+Q: What are the roots?
+A: x = (6 ± √4) / 2 = (6 ± 2) / 2. So x = 4 or x = 2. The answer is A.
+
+Refer to the solution process of the above example to provide a step-by-step solution to the following problem. Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Question: {question}
+Answer: To answer the question, we need to know:""",
+        "mcts": """Question: {question}
+Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Answer: Let's think step by step. """,
+        "tot": """Question: {question}
+Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Answer: Let's think step by step. """,
     }
 }
 
@@ -202,7 +241,8 @@ DATASET_PATTERNS = {
     "mmlu": r'A|B|C|D',
     "strategyqa": r'A|B',
     "commonsenseqa": r'A|B|C|D|E',
-    "aqua": r'A|B|C|D|E'
+    "aqua": r'A|B|C|D|E',
+    "quadratic": r'A|B|C|D|E'
 }
 
 # Answer index mapper
