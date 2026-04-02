@@ -13,11 +13,11 @@ from .utils import process_chain_points, split_list
 
 
 def draw_landscape(
-    dataset_name: str, 
-    plot_datas: Dict[int, Dict[str, Any]], 
-    splited_T_2D: List[np.ndarray], 
-    A_matrix_2D: np.ndarray, 
-    num_all_thoughts_w_start_list: List[int]
+    dataset_name: str,  # データセット名（正解アンカー情報を知るため）
+    plot_datas: Dict[int, Dict[str, Any]], # 質問ごとのメタ情報
+    splited_T_2D: List[np.ndarray], # t-SNE後の2D座標を質問ごとに分割したリスト
+    A_matrix_2D: np.ndarray, # 固定アンカー行列(A-E)をt-SNEした後の2D座標
+    num_all_thoughts_w_start_list: List[int]  # 全結合から質問ごとに分割するための長さ
 ) -> go.Figure:
     """
     Draw a landscape visualization of reasoning traces.
@@ -32,14 +32,16 @@ def draw_landscape(
     Returns:
         go.Figure: Plotly figure object.
     """
+    # t-SNE後の2D座標を質問ごとのリストに分割する
     all_T_with_start_coordinate_matrix = split_list(num_all_thoughts_w_start_list, splited_T_2D)
 
+    # 2行×5列のサブプロットを作成（列: 推論の進行度5段階、行: 上段=不正解、下段=正解）
     column_titles = [r'0-20% states', r'20-40% states', r'40-60% states', r'60-80% states', r'80-100% states']
-    fig = make_subplots(rows=2, cols=5, 
+    fig = make_subplots(rows=2, cols=5,
                         vertical_spacing=0.01, horizontal_spacing=0.005,
                         column_titles=column_titles)
 
-    # Collect points and separate them for correct/wrong chains
+    # 全質問の全チェーンを正解/不正解に振り分ける
     wrong_chain_points = []
     correct_chain_points = []
     all_start_coordinates = []
@@ -50,15 +52,16 @@ def draw_landscape(
             temp_distance_matrix = all_T_with_start_coordinate_matrix[sample_idx]
         except:
             print(len(all_T_with_start_coordinate_matrix), sample_idx)
+        # 末尾1行はStart（質問アンカー）の座標、それ以外が思考ステップの座標
         thoughts_coordinates = np.array(temp_distance_matrix[:-1])
         start_coordinate = temp_distance_matrix[-1]
         all_start_coordinates.append(start_coordinate)
-        
-        # Collect points for each chain
+
+        # 各チェーンの2D座標列を、最終回答の正誤で振り分ける
         for chain_idx in range(num_chains):
             start_idx = sum(num_thoughts_each_chain[:chain_idx])
             end_idx = sum(num_thoughts_each_chain[:chain_idx+1])
-            
+
             if end_idx <= start_idx:
                 continue
 
@@ -77,27 +80,25 @@ def draw_landscape(
             else:
                 wrong_chain_points.append(chain_data)
 
-    # Process both chains first
+    # 全チェーンの全ステップをフラット化し、各ステップに進行度(0→1)の重みを付ける
     wrong_x, wrong_y, wrong_weights, _, _ = process_chain_points(wrong_chain_points)
     correct_x, correct_y, correct_weights, _, _ = process_chain_points(correct_chain_points)
 
-    # Calculate thresholds for both sets
+    # 進行度の重みを5段階に分割するための閾値を計算（パーセンタイル）
     wrong_thresholds = np.percentile(wrong_weights, [20, 40, 60, 80]) if len(wrong_weights) > 0 else np.array([0.2, 0.4, 0.6, 0.8])
-    
-    # Handle the case where there are no correct answers
+
+    # 正解チェーンが1つもない場合のフォールバック
     if len(correct_weights) > 0:
         correct_thresholds = np.percentile(correct_weights, [20, 40, 60, 80])
     else:
         print("Warning: No correct answers found. Using default thresholds for correct answers.")
         correct_thresholds = np.array([0.2, 0.4, 0.6, 0.8])
-        # Create empty arrays for correct segments
         correct_x = np.array([])
         correct_y = np.array([])
 
-    # Lists to store segment data
+    # 進行度の閾値でステップを5グループに分割する
     wrong_segments = []
     correct_segments = []
-    # Process wrong chains
     for i in range(5):
         if i == 0:
             wrong_mask = wrong_weights <= wrong_thresholds[0] if len(wrong_weights) > 0 else np.array([], dtype=bool)
@@ -110,20 +111,20 @@ def draw_landscape(
                 wrong_mask = (wrong_weights > wrong_thresholds[i-1]) & (wrong_weights <= wrong_thresholds[i])
             else:
                 wrong_mask = np.array([], dtype=bool)
-                
+
             if len(correct_weights) > 0:
                 correct_mask = (correct_weights > correct_thresholds[i-1]) & (correct_weights <= correct_thresholds[i])
             else:
                 correct_mask = np.array([], dtype=bool)
 
-        # Get segments for both wrong and correct
+        # マスクを適用して各グループの(x, y)座標を取り出す
         if len(wrong_weights) > 0:
             wrong_x_segment = np.array(wrong_x)[wrong_mask]
             wrong_y_segment = np.array(wrong_y)[wrong_mask]
         else:
             wrong_x_segment = np.array([])
             wrong_y_segment = np.array([])
-            
+
         if len(correct_weights) > 0:
             correct_x_segment = np.array(correct_x)[correct_mask]
             correct_y_segment = np.array(correct_y)[correct_mask]
@@ -131,17 +132,15 @@ def draw_landscape(
             correct_x_segment = np.array([])
             correct_y_segment = np.array([])
 
-        # Store segments and their scales
         wrong_segments.append((wrong_x_segment, wrong_y_segment))
         correct_segments.append((correct_x_segment, correct_y_segment))
 
-    # Plot wrong chains (top subplot)
-    #######################################
+    # 各グループを2Dヒストグラム等高線でプロット（上段=不正解(赤)、下段=正解(青)）
     for i in range(5):
         wrong_x_segment, wrong_y_segment = wrong_segments[i]
         correct_x_segment, correct_y_segment = correct_segments[i]
 
-        # Only add trace if there are points in the segment
+        # 不正解チェーンの等高線（上段）
         if len(wrong_x_segment) > 0:
             fig.add_trace(
                 go.Histogram2dContour(
@@ -161,7 +160,7 @@ def draw_landscape(
                 row=1, col=i+1
             )
         else:
-            # Add an empty trace to maintain the subplot structure
+            # 点がないグループでもサブプロットの構造を維持するため空トレースを追加
             fig.add_trace(
                 go.Scatter(
                     x=[],
@@ -172,7 +171,7 @@ def draw_landscape(
                 row=1, col=i+1
             )
 
-        # Only add trace if there are points in the segment
+        # 正解チェーンの等高線（下段）
         if len(correct_x_segment) > 0:
             fig.add_trace(
                 go.Histogram2dContour(
@@ -192,7 +191,6 @@ def draw_landscape(
                 row=2, col=i+1
             )
         else:
-            # Add an empty trace to maintain the subplot structure
             fig.add_trace(
                 go.Scatter(
                     x=[],
@@ -203,7 +201,7 @@ def draw_landscape(
                 row=2, col=i+1
             )
 
-    # Add anchors to both plots
+    # 回答アンカー(A〜E)のラベルをデータセットに応じて決定
     if dataset_name == "mmlu":
         labels_anchors = ['A', 'B', 'C', 'D']
     elif dataset_name == "strategyqa":
@@ -211,93 +209,93 @@ def draw_landscape(
     else:
         labels_anchors = ['A', 'B', 'C', 'D', 'E']
 
-    # Add anchors to both subplots
+    # 全サブプロットに回答アンカーをプロット（★=正解(緑)、×=不正解(赤)）
     for idx, anchor_name in enumerate(labels_anchors):
-        if idx == 0:  # the first anchor is the correct one 
+        if idx == 0:  # rearrange済みなので先頭が常に正解
             marker_symbol = 'star'
             marker_color = "green"
-        else: 
+        else:
             marker_symbol = 'x'
             marker_color = "red"
 
-        # Add to top subplot
+        # 上段の全5列に配置
         for col_idx in range(5):
             fig.add_trace(
                 go.Scatter(
-                    x=[A_matrix_2D[idx, 0]], 
-                    y=[A_matrix_2D[idx, 1]], 
+                    x=[A_matrix_2D[idx, 0]],
+                    y=[A_matrix_2D[idx, 1]],
                     mode='markers',
                     marker=dict(
-                        symbol=marker_symbol, 
-                        size=18, 
-                        line_width=0.5, 
+                        symbol=marker_symbol,
+                        size=18,
+                        line_width=0.5,
                         color=marker_color,
-                        opacity=0.8, # transparency
+                        opacity=0.8,
                     ),
                     showlegend=False,
                 ),
                 row=1, col=col_idx+1
             )
 
-        # Add to bottom subplot
+        # 下段の全5列に配置
         for col_idx in range(5):
             fig.add_trace(
                 go.Scatter(
-                    x=[A_matrix_2D[idx, 0]], 
-                    y=[A_matrix_2D[idx, 1]], 
+                    x=[A_matrix_2D[idx, 0]],
+                    y=[A_matrix_2D[idx, 1]],
                     mode='markers',
                     marker=dict(
-                        symbol=marker_symbol, 
-                        size=18, 
-                        line_width=0.5, 
+                        symbol=marker_symbol,
+                        size=18,
+                        line_width=0.5,
                         color=marker_color,
-                        opacity=0.8, # transparency
+                        opacity=0.8,
                     ),
                     showlegend=False,
                 ),
                 row=2, col=col_idx+1
             )
 
-    # Move the subplot title to bottom
+    # サブプロットのタイトルを下部に移動
     fig = move_titles_to_bottom(fig, column_titles=column_titles, y_position=-0.12)
 
-    # Update both subplots to remove axes and maintain same range
+    # 全サブプロットの軸設定（目盛り非表示、グリッド表示）
     for row in [1, 2]:
         for i in range(1, 6):
             fig.update_xaxes(
-                row=row, 
+                row=row,
                 col=i,
                 showticklabels=False,
-                showgrid=True,           # Enable grid
-                gridwidth=1,             # Grid line width
-                gridcolor='lightgray',   # Grid line color
-                zeroline=False,          # Hide zero line
-                showline=False,          # Show axis line
-                linewidth=1,             # Axis line width
-                linecolor='black',       # Axis line color
-                mirror=True,             # Mirror axis line
+                showgrid=True,
+                gridwidth=1,
+                gridcolor='lightgray',
+                zeroline=False,
+                showline=False,
+                linewidth=1,
+                linecolor='black',
+                mirror=True,
             )
             fig.update_yaxes(
-                row=row, 
+                row=row,
                 col=i,
                 showticklabels=False,
-                showgrid=True,           # Enable grid
-                gridwidth=1,             # Grid line width
-                gridcolor='lightgray',   # Grid line color
-                zeroline=False,          # Hide zero line
-                showline=False,          # Show axis line
-                linewidth=1,             # Axis line width
-                linecolor='black',       # Axis line color
-                mirror=True,             # Mirror axis line
+                showgrid=True,
+                gridwidth=1,
+                gridcolor='lightgray',
+                zeroline=False,
+                showline=False,
+                linewidth=1,
+                linecolor='black',
+                mirror=True,
             )
 
-    # Update layout for a tighter plot
+    # レイアウト設定（白背景、余白最小化）
     fig.update_layout(
-        height=350,  # Reduced height
+        height=350,
         width=1500,
-        margin=dict(l=5, r=5, t=5, b=37),  # Remove margins
-        plot_bgcolor='white',  # Set plot background to white
-        paper_bgcolor='white', # Set paper background to white
+        margin=dict(l=5, r=5, t=5, b=37),
+        plot_bgcolor='white',
+        paper_bgcolor='white',
     )
     template = dict(
         layout=dict(
@@ -306,7 +304,7 @@ def draw_landscape(
             plot_bgcolor="white",
             title_font_color="black",
             legend_font_color="black",
-            
+
             xaxis=dict(
                 title_font_color="black",
                 tickfont_color="black",
@@ -314,23 +312,23 @@ def draw_landscape(
                 gridcolor="black",
                 zerolinecolor="black",
             ),
-            
+
             yaxis=dict(
-                title_font_color="black", 
+                title_font_color="black",
                 tickfont_color="black",
                 linecolor="black",
                 gridcolor="black",
                 zerolinecolor="black",
             ),
-            
+
             hoverlabel=dict(
                 font_color="black",
                 bgcolor="white"
             ),
-            
+
             annotations=[dict(font_color="black")],
             shapes=[dict(line_color="black")],
-            
+
             coloraxis=dict(
                 colorbar_tickfont_color="black",
                 colorbar_title_font_color="black"
@@ -341,6 +339,32 @@ def draw_landscape(
     fig.update_layout(template=template)
 
     return fig
+
+
+def draw_landscape_per_question(
+    dataset_name: str,
+    plot_datas: Dict[int, Dict[str, Any]],
+    splited_T_2D: List[np.ndarray],
+    A_matrix_2D: np.ndarray,
+    num_all_thoughts_w_start_list: List[int]
+) -> Dict[int, go.Figure]:
+    """質問ごとに個別のlandscape図を生成する。draw_landscapeと同じ2D座標空間を使用。"""
+    # t-SNE後の2D座標を質問ごとに分割
+    all_T = split_list(num_all_thoughts_w_start_list, splited_T_2D)
+
+    figures = {}
+    for i, sample_idx in enumerate(sorted(plot_datas.keys())):
+        single_T = np.array(all_T[i])
+        fig = draw_landscape(
+            dataset_name=dataset_name,
+            plot_datas={0: plot_datas[sample_idx]},
+            splited_T_2D=single_T,
+            A_matrix_2D=A_matrix_2D,
+            num_all_thoughts_w_start_list=[num_all_thoughts_w_start_list[i]],
+        )
+        figures[sample_idx] = fig
+
+    return figures
 
 
 def move_titles_to_bottom(fig, column_titles, y_position=-0.12):
@@ -424,21 +448,22 @@ def process_landscape_data(
     list_num_all_thoughts_w_start_list = []
     list_plot_data = []
 
-    # Aggregate and t-SNE down-project the data from different models
+    # plot_typeに応じて比較軸を変えてデータを集約する
     if plot_type == "model":
+        # モデル間比較: 同一手法で複数モデルのデータを読み込む
         for model_name in models:
             distance_matries, num_all_thoughts_w_start_list, plot_datas = load_landscape_data(model=model_name, dataset=dataset, method=methods[0], ROOT=ROOT)
             list_distance_matrix.append(distance_matries)
             list_plot_data.append(plot_datas)
             list_num_all_thoughts_w_start_list.append(num_all_thoughts_w_start_list)
             distance_matrix_shape.append(distance_matries.shape)
-    
+
     elif plot_type == "dataset":
-        # We cannot make all the samples with different num_answer to process together
+        # データセット間比較: 回答選択肢数が異なるため未実装
         raise NotImplementedError
-    
-    # Aggregate and t-SNE down-project the data from different methods
+
     elif plot_type == "method":
+        # 手法間比較: 同一モデルで複数手法のデータを読み込む
         for method in methods:
             distance_matries, num_all_thoughts_w_start_list, plot_datas = load_landscape_data(model=model, dataset=dataset, method=method, ROOT=ROOT)
             list_distance_matrix.append(distance_matries)
@@ -448,21 +473,23 @@ def process_landscape_data(
     else:
         raise NotImplementedError
 
+    # 全データを縦に結合
     fig_data = np.concatenate(list_distance_matrix)
 
+    # 回答アンカー用の固定距離行列を作成（各回答が互いに等距離 = 正単体の頂点）
     if dataset == "mmlu":
-        target_A_matrix = np.ones((4,4)) * (1/4) 
+        target_A_matrix = np.ones((4,4)) * (1/4)
     elif dataset == "strategyqa":
-        target_A_matrix = np.ones((2,2)) * (1/3) 
+        target_A_matrix = np.ones((2,2)) * (1/3)
     else:
-        target_A_matrix = np.ones((5,5)) * (1/4) 
+        target_A_matrix = np.ones((5,5)) * (1/4)
     target_A_matrix[np.diag_indices(target_A_matrix.shape[0])] = 0
 
-    # Concatenate all T and A(0-th row) (Nx(num_thoughts + 1), C), then concat the constant A matrix (C, C)
+    # 全思考ステップ + 固定アンカー行列をまとめてt-SNEで2Dに次元削減
     tsne = TSNE(n_components=2, perplexity=10, random_state=42)
     all_T_constant_A_distance_matrix = tsne.fit_transform(np.concatenate([fig_data, target_A_matrix]))
 
-    # Split the Nx(num_thoughts + 1) back to sample-wise distance matrix
+    # t-SNE結果を「思考ステップの2D座標」と「回答アンカーの2D座標」に分離
     if dataset == "mmlu":
         index = -4
     elif dataset == "strategyqa":
@@ -470,6 +497,7 @@ def process_landscape_data(
     else:
         index = -5
     all_T_2D, A_matrix_2D = all_T_constant_A_distance_matrix[:index, :], all_T_constant_A_distance_matrix[index:, :]
+    # 思考ステップの2D座標を比較軸（モデルまたは手法）ごとに分割
     list_all_T_2D = split_array(distance_matrix_shape, all_T_2D)
 
     return list_all_T_2D, A_matrix_2D, list_plot_data, list_num_all_thoughts_w_start_list
@@ -498,59 +526,52 @@ def load_landscape_data(
     """
     import json
     import pickle as pkl
-    
-    # Load data
-    plot_datas = {} 
+
+    plot_datas = {}
     distance_matrices = []
     num_all_thoughts_w_start_list = []
-    
-    # Get the list of files in the distance_matrix directory
+
+    # 距離行列ディレクトリから対象ファイルを取得
     distance_matrix_dir = f'{ROOT}/{dataset}/distance_matrix/'
     if not os.path.exists(distance_matrix_dir):
         raise FileNotFoundError(f"Directory not found: {distance_matrix_dir}")
-    
-    # Filter files for the specific model and method
+
+    # 指定モデル・手法に該当するファイルのみ抽出し、インデックス順にソート
     files = [f for f in os.listdir(distance_matrix_dir) if f.startswith(f"{model}--{method}--{dataset}--") and f.endswith(".pkl")]
-    
-    # Sort files by index
     files.sort(key=lambda x: int(x.split("--")[-1].split(".")[0]))
-    
+
     for file_name in tqdm(files, desc=f"Loading plot data for {model} {method} {dataset}"):
         sample_idx = int(file_name.split("--")[-1].split(".")[0])
-        
-        # Load thoughts file
+
+        # 対応するJSONファイル（思考トレース）のパスを構築
         thoughts_file = f'{ROOT}/{dataset}/thoughts/{model}--{method}--{dataset}--{sample_idx}.json'
 
         if not os.path.exists(thoughts_file):
             print(f"Thoughts file not found: {thoughts_file}")
             continue
-        
-        # Load distance matrix
+
         distance_matrix_file = f'{ROOT}/{dataset}/distance_matrix/{file_name}'
         if not os.path.exists(distance_matrix_file):
             print(f"Distance matrix file not found: {distance_matrix_file}")
             continue
-        
-        # Load the trial data from the JSON file
+
+        # JSONから推論結果のメタ情報を読み込む
         with open(thoughts_file, 'r', encoding='utf-8') as f:
             trial_data = json.load(f)
-        
-        # Extract the required fields from the trial data
+
         trial_thoughts = trial_data["trial_thoughts"]
         all_answers = [answer for _, answer, _ in trial_thoughts]
         answer_gt_short = trial_data["answer_gt_short"]
-        
-        # Calculate num_thoughts_each_chain
+
         num_thoughts_each_chain = [len(thoughts) for thoughts, _, _ in trial_thoughts]
         num_chains = len(trial_thoughts)
         num_all_thoughts = sum(num_thoughts_each_chain)
-        
-        # Load distance matrix
+
+        # PKLから距離行列を読み込む
         with open(distance_matrix_file, 'rb') as f:
             distance_matrix = pkl.load(f)
-        
-        # draw the landscape
-        #######################################    
+
+        # データセットに応じてアンカーラベルと正解インデックスを決定
         if "strategyqa" in thoughts_file:
             labels_anchors = ["Start", 'A', 'B']
             gt_idx = labels_anchors.index(answer_gt_short)
@@ -560,8 +581,8 @@ def load_landscape_data(
         else:
             labels_anchors = ["Start", 'A', 'B', 'C', 'D', 'E']
             gt_idx = labels_anchors.index(answer_gt_short)
-        
-        # Skip the broken distance matrix
+
+        # 列数が期待値と一致しない壊れた距離行列をスキップ
         expected_dims = {
             "commonsenseqa": 6,
             "aqua": 6,
@@ -572,14 +593,14 @@ def load_landscape_data(
         if distance_matrix.shape[1] != expected_dims.get(dataset):
             continue
 
-        # Normalize the distance matrix
-        distance_matrix = distance_matrix[:num_all_thoughts+1, 1:] # get T matrix and the first row of the A matrix
-        distance_matrix = distance_matrix / np.linalg.norm(distance_matrix, axis=1, ord=1, keepdims=True) # normalize the D (T, Y)
-        
-        # sort the source_matrix to make the GT at the first row (GT, Y_c, ... other answers)
+        # 列0（質問との距離）を除外し、思考ステップ+質問アンカー1行だけ取り出す
+        distance_matrix = distance_matrix[:num_all_thoughts+1, 1:]
+        # 各行をL1正規化（回答への距離の合計を1にする）
+        distance_matrix = distance_matrix / np.linalg.norm(distance_matrix, axis=1, ord=1, keepdims=True)
+        # 正解の列を先頭に移動（後段の処理で先頭列=正解として扱うため）
         distance_matrix = rearrange_columns(distance_matrix, gt_idx-1)
 
-        # Store data
+        # 描画用メタ情報を保存
         plot_datas[sample_idx] = {
             "num_thoughts_each_chain": num_thoughts_each_chain,
             "num_chains": num_chains,
@@ -587,16 +608,17 @@ def load_landscape_data(
             "all_answers": all_answers,
             "answer_gt_short": answer_gt_short
         }
-        
+
         distance_matrices.append(distance_matrix)
-        num_all_thoughts_w_start_list.append(num_all_thoughts+1)  # add one row from A matrix
-    
+        # +1はStart（質問アンカー）の行分
+        num_all_thoughts_w_start_list.append(num_all_thoughts+1)
+
     if len(distance_matrices) == 0:
         raise ValueError(f"No data found for {model} {method} {dataset}")
-    
-    # Concatenate all distance matrices
+
+    # 全質問の距離行列を縦に結合
     distance_matrices = np.concatenate(distance_matrices)
-    
+
     return distance_matrices, num_all_thoughts_w_start_list, plot_datas
 
 

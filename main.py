@@ -3,7 +3,7 @@ import sys
 from typing import Optional
 from fire import Fire
 
-from lot import sample, calculate, plot
+from lot import sample, calculate, plot, plot_per_question
 
 def main(
     task: str = 'all',
