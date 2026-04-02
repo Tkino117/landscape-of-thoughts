@@ -83,3 +83,4 @@ demo.ipynb
 *.mp4
 
 demo_data/
+*.old/

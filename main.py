@@ -18,6 +18,7 @@ def main(
     prompt_file: Optional[str] = None,
     max_tokens: int = 2048,
     plot_type: str = 'method',
+    plot_mode: str = 'both',  # 'all', 'per_question', 'both'
     save_root: str = "demo_data",
     output_dir: str = "figures/landscape",
     local: bool = False,
@@ -150,7 +151,6 @@ def main(
         # Extract model name without path for plotting
         model_name_short = model_name.split("/")[-1] if "/" in model_name else model_name
         
-        # Add plot-specific arguments
         plot_kwargs = {
             'model_name': model_name_short,
             'dataset_name': dataset_name,
@@ -159,8 +159,13 @@ def main(
             'save_root': save_root,
             'output_dir': output_dir
         }
-        
-        plot(**plot_kwargs)
+
+        if plot_mode in ('all', 'both'):
+            plot(**plot_kwargs)
+        if plot_mode in ('per_question', 'both'):
+            pq_kwargs = plot_kwargs.copy()
+            pq_kwargs['output_dir'] = output_dir + '_per_question'
+            plot_per_question(**pq_kwargs)
     
     print("="*50)
     print("ALL TASKS COMPLETED")
