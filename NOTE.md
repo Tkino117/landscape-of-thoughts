@@ -8,6 +8,7 @@ python main.py \
   --task all \
   --model_name Qwen/Qwen2.5-3B-Instruct \
   --dataset_name quadratic \
+  --data_path ./lot/data/quadratic.jsonl \
   --method cot \
   --num_samples 10 \
   --start_index 0 \
