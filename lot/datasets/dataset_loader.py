@@ -17,6 +17,7 @@ DATASET_TYPES = {
     'commonsenseqa': 'json',
     'strategyqa': 'json',
     'quadratic': 'json',
+    'same_ans': 'json',
 }
 
 # Dataset field mapping
@@ -46,6 +47,12 @@ DATASET_FIELDS = {
         'answer_format': lambda answer: "A" if answer else "B",
     },
     'quadratic': {
+        'question_field': 'question',
+        'options_field': 'options',
+        'answer_field': 'correct',
+        'explanation_field': 'rationale',
+    },
+    'same_ans': {
         'question_field': 'question',
         'options_field': 'options',
         'answer_field': 'correct',
