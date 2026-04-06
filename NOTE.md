@@ -1,13 +1,13 @@
 ## 実行法
 vllm serve Qwen/Qwen2.5-3B-Instruct \
-  --api-key "token-api-123" \
+  --api-key "token-abc123" \
   --port 8000
   --download-dir YOUR_MODEL_PATH \
 
 python main.py \
   --task all \
   --model_name Qwen/Qwen2.5-3B-Instruct \
-  --dataset_name quadratic \
+  --dataset_name same_ans \
   --data_path ./lot/data/same_ans.jsonl \
   --method cot \
   --num_samples 10 \

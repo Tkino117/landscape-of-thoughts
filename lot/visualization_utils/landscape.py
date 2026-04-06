@@ -605,6 +605,7 @@ def load_landscape_data(
             "strategyqa": 3,
             "dummy": 6,
             "quadratic": 6,
+            "same_ans": 6,
         }
         if distance_matrix.shape[1] != expected_dims.get(dataset):
             continue
