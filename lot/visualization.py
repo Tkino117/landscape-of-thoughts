@@ -119,25 +119,27 @@ def plot_per_question(
         if not method:
             method_idx += 1
 
-        # 個別の図を保存しつつ、画像を収集
-        images = []
+        # 個別の図を保存しつつ、下半分（正解行）を収集
+        correct_halves = []
         for sample_idx, fig in figures.items():
             save_path = os.path.join(output_dir, f"{model_name}-{dataset_name}-{current_method}-q{sample_idx}.png")
             print(f"==> Saving figure to: {save_path}")
             img_bytes = pio.to_image(fig, format="png", scale=6, width=1500, height=350)
             with open(save_path, "wb") as f:
                 f.write(img_bytes)
-            images.append(Image.open(io.BytesIO(img_bytes)))
+            img = Image.open(io.BytesIO(img_bytes))
+            # 下半分（正解行）だけ切り出す
+            correct_halves.append(img.crop((0, img.height // 2, img.width, img.height)))
 
-        # 全質問の図を縦に結合して1枚にまとめる
-        if images:
-            total_width = max(img.width for img in images)
-            total_height = sum(img.height for img in images)
+        # 正解行を縦に結合して1枚にまとめる
+        if correct_halves:
+            total_width = max(h.width for h in correct_halves)
+            total_height = sum(h.height for h in correct_halves)
             combined = Image.new("RGB", (total_width, total_height), "white")
             y_offset = 0
-            for img in images:
-                combined.paste(img, (0, y_offset))
-                y_offset += img.height
+            for h in correct_halves:
+                combined.paste(h, (0, y_offset))
+                y_offset += h.height
             correct_save_path = os.path.join(output_dir, f"{model_name}-{dataset_name}-{current_method}-correct.png")
             print(f"==> Saving combined figure to: {correct_save_path}")
             combined.save(correct_save_path)

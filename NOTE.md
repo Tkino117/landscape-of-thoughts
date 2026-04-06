@@ -8,13 +8,13 @@ python main.py \
   --task all \
   --model_name Qwen/Qwen2.5-3B-Instruct \
   --dataset_name quadratic \
-  --data_path ./lot/data/quadratic.jsonl \
+  --data_path ./lot/data/same_ans.jsonl \
   --method cot \
   --num_samples 10 \
   --start_index 0 \
   --end_index 5 \
   --plot_type method \
-  --output_dir figures/landscape \
+  --output_dir figures/same_ans/landscape \
   --local \
   --local_api_key token-abc123
 
