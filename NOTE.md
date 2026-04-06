@@ -1,8 +1,8 @@
 ## 実行法
 vllm serve Qwen/Qwen2.5-3B-Instruct \
   --api-key "token-api-123" \
-  --download-dir YOUR_MODEL_PATH \
   --port 8000
+  --download-dir YOUR_MODEL_PATH \
 
 python main.py \
   --task all \
