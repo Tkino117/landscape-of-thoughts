@@ -352,6 +352,16 @@ def draw_landscape_per_question(
     # t-SNE後の2D座標を質問ごとに分割
     all_T = split_list(num_all_thoughts_w_start_list, splited_T_2D)
 
+    # 全質問の全座標とアンカー座標から共通の軸範囲を計算
+    all_coords = np.concatenate(list(all_T) + [A_matrix_2D])
+    margin = 0.05
+    x_min, x_max = all_coords[:, 0].min(), all_coords[:, 0].max()
+    y_min, y_max = all_coords[:, 1].min(), all_coords[:, 1].max()
+    x_pad = (x_max - x_min) * margin
+    y_pad = (y_max - y_min) * margin
+    x_range = [x_min - x_pad, x_max + x_pad]
+    y_range = [y_min - y_pad, y_max + y_pad]
+
     figures = {}
     for i, sample_idx in enumerate(sorted(plot_datas.keys())):
         single_T = np.array(all_T[i])
@@ -362,6 +372,11 @@ def draw_landscape_per_question(
             A_matrix_2D=A_matrix_2D,
             num_all_thoughts_w_start_list=[num_all_thoughts_w_start_list[i]],
         )
+        # 全サブプロットの軸範囲を共通化
+        for row in [1, 2]:
+            for col in range(1, 6):
+                fig.update_xaxes(range=x_range, row=row, col=col)
+                fig.update_yaxes(range=y_range, row=row, col=col)
         figures[sample_idx] = fig
 
     return figures

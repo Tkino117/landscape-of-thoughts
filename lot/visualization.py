@@ -1,4 +1,6 @@
+import io
 import os
+from PIL import Image
 import plotly.io as pio
 
 from .visualization_utils import draw_landscape, draw_landscape_per_question, process_landscape_data
@@ -117,10 +119,28 @@ def plot_per_question(
         if not method:
             method_idx += 1
 
+        # 個別の図を保存しつつ、画像を収集
+        images = []
         for sample_idx, fig in figures.items():
             save_path = os.path.join(output_dir, f"{model_name}-{dataset_name}-{current_method}-q{sample_idx}.png")
             print(f"==> Saving figure to: {save_path}")
-            pio.write_image(fig, save_path, scale=6, width=1500, height=350)
+            img_bytes = pio.to_image(fig, format="png", scale=6, width=1500, height=350)
+            with open(save_path, "wb") as f:
+                f.write(img_bytes)
+            images.append(Image.open(io.BytesIO(img_bytes)))
+
+        # 全質問の図を縦に結合して1枚にまとめる
+        if images:
+            total_width = max(img.width for img in images)
+            total_height = sum(img.height for img in images)
+            combined = Image.new("RGB", (total_width, total_height), "white")
+            y_offset = 0
+            for img in images:
+                combined.paste(img, (0, y_offset))
+                y_offset += img.height
+            correct_save_path = os.path.join(output_dir, f"{model_name}-{dataset_name}-{current_method}-correct.png")
+            print(f"==> Saving combined figure to: {correct_save_path}")
+            combined.save(correct_save_path)
 
     print("==> Plotting complete!")
     return True
