@@ -77,6 +77,7 @@ def evaluate(
     method: str = "cot",
     save_root: str = "exp-data",
     output_dir: str = "figures",
+    normalize: bool = True,
 ) -> dict:
     """
     距離行列と思考トレースから定量指標を算出し、JSON で保存する。
@@ -86,8 +87,8 @@ def evaluate(
         save_root/{dataset_name}/distance_matrix/{model}--{method}--{dataset}--{i}.pkl
 
     出力:
-        output_dir/evaluation/{model}-{dataset}-{method}-eval.json
-        output_dir/evaluation/{model}-{dataset}-{method}-eval-{correct|incorrect|all}.png
+        output_dir/evaluation/{model}-{dataset}-{method}-eval.json          (normalize=True)
+        output_dir/evaluation_raw/{model}-{dataset}-{method}-eval.json      (normalize=False)
     """
     # --- 入力: visualization と同じ前処理で読み込み ---
     distance_matrices, num_all_thoughts_w_start_list, plot_datas = load_landscape_data(
@@ -95,6 +96,7 @@ def evaluate(
         dataset=dataset_name,
         method=method,
         ROOT=save_root,
+        normalize=normalize,
     )
 
     # 質問ごとに分割（各要素: (num_all_thoughts+1, num_answers)）
@@ -161,7 +163,7 @@ def evaluate(
     }
 
     # --- 出力: JSON の保存 ---
-    eval_dir = os.path.join(output_dir, "evaluation")
+    eval_dir = os.path.join(output_dir, "evaluation" if normalize else "evaluation_raw")
     os.makedirs(eval_dir, exist_ok=True)
     save_path = os.path.join(eval_dir, f"{model_name}-{dataset_name}-{method}-eval.json")
     with open(save_path, "w", encoding="utf-8") as f:

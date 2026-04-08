@@ -181,6 +181,14 @@ def main(
             save_root=save_root,
             output_dir=os.path.dirname(output_dir),  # figures/landscape -> figures
         )
+        evaluate(
+            model_name=model_name_short,
+            dataset_name=dataset_name,
+            method=method,
+            save_root=save_root,
+            output_dir=os.path.dirname(output_dir),
+            normalize=False,
+        )
 
     print("="*50)
     print("ALL TASKS COMPLETED")

@@ -10,7 +10,7 @@ python main.py \
   --dataset_name same_ans \
   --data_path ./lot/data/same_ans.jsonl \
   --method cot \
-  --num_samples 10 \
+  --num_samples 20 \
   --start_index 0 \
   --end_index 5 \
   --plot_type method \
