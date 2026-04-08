@@ -234,6 +234,201 @@ Answer: Let's think step by step. """,
 Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
 Answer: Let's think step by step. """,
     },
+    "same_ans1": {
+        "cot": """Question: Calculate: 8 × 6 - 3 × 7
+Options: (A) 21, (B) 48, (C) 27, (D) 35, (E) 52.
+Answer: Let's think step by step. First, 8 × 6 = 48. Next, 3 × 7 = 21. Finally, 48 - 21 = 27. The answer is C.
+
+Question: Solve the equation: (3x - 5) / 4 = 7. What is x?
+Options: (A) 8, (B) 33, (C) 11, (D) 3, (E) 15.
+Answer: Let's think step by step. Multiply both sides by 4: 3x - 5 = 28. Add 5: 3x = 33. Divide by 3: x = 11. The answer is C.
+
+Refer to the solution process of the above example to provide a step-by-step solution to the following problem. Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Q: {question}
+Answer: Let's think step by step.
+""",
+        "zero-shot-cot": """Question: {question}
+Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Answer: Let's think step by step. """,
+        "l2m": """Question: Calculate: 8 × 6 - 3 × 7
+Options: (A) 21, (B) 48, (C) 27, (D) 35, (E) 52.
+Answer: To answer the question "What is 8 × 6 - 3 × 7?", we need to know: "What is 8 × 6?", "What is 3 × 7?", "What is the difference?".
+
+Q: What is 8 × 6?
+A: 8 × 6 = 48.
+
+Q: What is 3 × 7?
+A: 3 × 7 = 21.
+
+Q: What is the difference?
+A: 48 - 21 = 27. The answer is C.
+
+Refer to the solution process of the above example to provide a step-by-step solution to the following problem. Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Question: {question}
+Answer: To answer the question, we need to know:""",
+        "mcts": """Question: {question}
+Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Answer: Let's think step by step. """,
+        "tot": """Question: {question}
+Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Answer: Let's think step by step. """,
+    },
+    "same_ans2": {
+        "cot": """Question: Calculate: 8 × 6 - 3 × 7
+Options: (A) 21, (B) 48, (C) 27, (D) 35, (E) 52.
+Answer: Let's think step by step. First, 8 × 6 = 48. Next, 3 × 7 = 21. Finally, 48 - 21 = 27. The answer is C.
+
+Question: Solve the equation: (3x - 5) / 4 = 7. What is x?
+Options: (A) 8, (B) 33, (C) 11, (D) 3, (E) 15.
+Answer: Let's think step by step. Multiply both sides by 4: 3x - 5 = 28. Add 5: 3x = 33. Divide by 3: x = 11. The answer is C.
+
+Refer to the solution process of the above example to provide a step-by-step solution to the following problem. Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Q: {question}
+Answer: Let's think step by step.
+""",
+        "zero-shot-cot": """Question: {question}
+Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Answer: Let's think step by step. """,
+        "l2m": """Question: Calculate: 8 × 6 - 3 × 7
+Options: (A) 21, (B) 48, (C) 27, (D) 35, (E) 52.
+Answer: To answer the question "What is 8 × 6 - 3 × 7?", we need to know: "What is 8 × 6?", "What is 3 × 7?", "What is the difference?".
+
+Q: What is 8 × 6?
+A: 8 × 6 = 48.
+
+Q: What is 3 × 7?
+A: 3 × 7 = 21.
+
+Q: What is the difference?
+A: 48 - 21 = 27. The answer is C.
+
+Refer to the solution process of the above example to provide a step-by-step solution to the following problem. Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Question: {question}
+Answer: To answer the question, we need to know:""",
+        "mcts": """Question: {question}
+Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Answer: Let's think step by step. """,
+        "tot": """Question: {question}
+Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Answer: Let's think step by step. """,
+    },
+    "same_ans3": {
+        "cot": """Question: Calculate: 8 × 6 - 3 × 7
+Options: (A) 21, (B) 48, (C) 27, (D) 35, (E) 52.
+Answer: Let's think step by step. First, 8 × 6 = 48. Next, 3 × 7 = 21. Finally, 48 - 21 = 27. The answer is C.
+
+Question: Solve the equation: (3x - 5) / 4 = 7. What is x?
+Options: (A) 8, (B) 33, (C) 11, (D) 3, (E) 15.
+Answer: Let's think step by step. Multiply both sides by 4: 3x - 5 = 28. Add 5: 3x = 33. Divide by 3: x = 11. The answer is C.
+
+Refer to the solution process of the above example to provide a step-by-step solution to the following problem. Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Q: {question}
+Answer: Let's think step by step.
+""",
+        "zero-shot-cot": """Question: {question}
+Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Answer: Let's think step by step. """,
+        "l2m": """Question: Calculate: 8 × 6 - 3 × 7
+Options: (A) 21, (B) 48, (C) 27, (D) 35, (E) 52.
+Answer: To answer the question "What is 8 × 6 - 3 × 7?", we need to know: "What is 8 × 6?", "What is 3 × 7?", "What is the difference?".
+
+Q: What is 8 × 6?
+A: 8 × 6 = 48.
+
+Q: What is 3 × 7?
+A: 3 × 7 = 21.
+
+Q: What is the difference?
+A: 48 - 21 = 27. The answer is C.
+
+Refer to the solution process of the above example to provide a step-by-step solution to the following problem. Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Question: {question}
+Answer: To answer the question, we need to know:""",
+        "mcts": """Question: {question}
+Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Answer: Let's think step by step. """,
+        "tot": """Question: {question}
+Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Answer: Let's think step by step. """,
+    },
+    "same_ans4": {
+        "cot": """Question: Calculate: 8 × 6 - 3 × 7
+Options: (A) 21, (B) 48, (C) 27, (D) 35, (E) 52.
+Answer: Let's think step by step. First, 8 × 6 = 48. Next, 3 × 7 = 21. Finally, 48 - 21 = 27. The answer is C.
+
+Question: Solve the equation: (3x - 5) / 4 = 7. What is x?
+Options: (A) 8, (B) 33, (C) 11, (D) 3, (E) 15.
+Answer: Let's think step by step. Multiply both sides by 4: 3x - 5 = 28. Add 5: 3x = 33. Divide by 3: x = 11. The answer is C.
+
+Refer to the solution process of the above example to provide a step-by-step solution to the following problem. Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Q: {question}
+Answer: Let's think step by step.
+""",
+        "zero-shot-cot": """Question: {question}
+Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Answer: Let's think step by step. """,
+        "l2m": """Question: Calculate: 8 × 6 - 3 × 7
+Options: (A) 21, (B) 48, (C) 27, (D) 35, (E) 52.
+Answer: To answer the question "What is 8 × 6 - 3 × 7?", we need to know: "What is 8 × 6?", "What is 3 × 7?", "What is the difference?".
+
+Q: What is 8 × 6?
+A: 8 × 6 = 48.
+
+Q: What is 3 × 7?
+A: 3 × 7 = 21.
+
+Q: What is the difference?
+A: 48 - 21 = 27. The answer is C.
+
+Refer to the solution process of the above example to provide a step-by-step solution to the following problem. Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Question: {question}
+Answer: To answer the question, we need to know:""",
+        "mcts": """Question: {question}
+Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Answer: Let's think step by step. """,
+        "tot": """Question: {question}
+Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Answer: Let's think step by step. """,
+    },
+    "same_ans5": {
+        "cot": """Question: Calculate: 8 × 6 - 3 × 7
+Options: (A) 21, (B) 48, (C) 27, (D) 35, (E) 52.
+Answer: Let's think step by step. First, 8 × 6 = 48. Next, 3 × 7 = 21. Finally, 48 - 21 = 27. The answer is C.
+
+Question: Solve the equation: (3x - 5) / 4 = 7. What is x?
+Options: (A) 8, (B) 33, (C) 11, (D) 3, (E) 15.
+Answer: Let's think step by step. Multiply both sides by 4: 3x - 5 = 28. Add 5: 3x = 33. Divide by 3: x = 11. The answer is C.
+
+Refer to the solution process of the above example to provide a step-by-step solution to the following problem. Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Q: {question}
+Answer: Let's think step by step.
+""",
+        "zero-shot-cot": """Question: {question}
+Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Answer: Let's think step by step. """,
+        "l2m": """Question: Calculate: 8 × 6 - 3 × 7
+Options: (A) 21, (B) 48, (C) 27, (D) 35, (E) 52.
+Answer: To answer the question "What is 8 × 6 - 3 × 7?", we need to know: "What is 8 × 6?", "What is 3 × 7?", "What is the difference?".
+
+Q: What is 8 × 6?
+A: 8 × 6 = 48.
+
+Q: What is 3 × 7?
+A: 3 × 7 = 21.
+
+Q: What is the difference?
+A: 48 - 21 = 27. The answer is C.
+
+Refer to the solution process of the above example to provide a step-by-step solution to the following problem. Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Question: {question}
+Answer: To answer the question, we need to know:""",
+        "mcts": """Question: {question}
+Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Answer: Let's think step by step. """,
+        "tot": """Question: {question}
+Your final answer should be in the format of 'The answer is (chosen multiple-choice option)'.
+Answer: Let's think step by step. """,
+    },
     "quadratic": {
         "cot": """Question: Solve the quadratic equation: x² - 6x + 8 = 0. What are the solutions?
 Options: (A) x = 2, x = 4, (B) x = -2, x = -4, (C) x = 3 ± i, (D) x = 1, x = 8, (E) x = 3 ± 2i.
@@ -282,7 +477,12 @@ DATASET_PATTERNS = {
     "commonsenseqa": r'A|B|C|D|E',
     "aqua": r'A|B|C|D|E',
     "quadratic": r'A|B|C|D|E',
-    "same_ans": r'A|B|C|D|E'
+    "same_ans": r'A|B|C|D|E',
+    "same_ans1": r'A|B|C|D|E',
+    "same_ans2": r'A|B|C|D|E',
+    "same_ans3": r'A|B|C|D|E',
+    "same_ans4": r'A|B|C|D|E',
+    "same_ans5": r'A|B|C|D|E'
 }
 
 # Answer index mapper

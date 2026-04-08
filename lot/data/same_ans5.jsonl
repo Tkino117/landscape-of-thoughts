@@ -1,0 +1,5 @@
+{"question": "Calculate: 7 × 3 - 13", "options": ["A) -3/4", "B) 2", "C) 8", "D) -11", "E) 5/6"], "rationale": "7 × 3 = 21. 21 - 13 = 8.", "correct": "C"}
+{"question": "Solve the equation: (6x - 7) / 5 = 41/5. What is x?", "options": ["A) -3/4", "B) 2", "C) 8", "D) -11", "E) 5/6"], "rationale": "Multiply both sides by 5: 6x - 7 = 41. 6x = 48. x = 8.", "correct": "C"}
+{"question": "Solve the equation: x² + 17 = 81. What is the positive value of x?", "options": ["A) -3/4", "B) 2", "C) 8", "D) -11", "E) 5/6"], "rationale": "x² = 64. x = ±8. The positive value is 8.", "correct": "C"}
+{"question": "Solve the quadratic equation: x² - 10x + 16 = 0. What is the larger solution?", "options": ["A) -3/4", "B) 2", "C) 8", "D) -11", "E) 5/6"], "rationale": "Factoring: (x - 2)(x - 8) = 0. x = 2 or x = 8. The larger solution is 8.", "correct": "C"}
+{"question": "Solve the quadratic equation: 4x² - 29x - 24 = 0. What is the larger solution?", "options": ["A) -3/4", "B) 2", "C) 8", "D) -11", "E) 5/6"], "rationale": "Using the quadratic formula: discriminant = 841 + 384 = 1225 = 35². x = (29 ± 35) / 8. x = 8 or x = -3/4. The larger solution is 8.", "correct": "C"}

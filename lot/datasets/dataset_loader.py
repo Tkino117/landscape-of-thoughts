@@ -18,6 +18,11 @@ DATASET_TYPES = {
     'strategyqa': 'json',
     'quadratic': 'json',
     'same_ans': 'json',
+    'same_ans1': 'json',
+    'same_ans2': 'json',
+    'same_ans3': 'json',
+    'same_ans4': 'json',
+    'same_ans5': 'json',
 }
 
 # Dataset field mapping
@@ -53,6 +58,36 @@ DATASET_FIELDS = {
         'explanation_field': 'rationale',
     },
     'same_ans': {
+        'question_field': 'question',
+        'options_field': 'options',
+        'answer_field': 'correct',
+        'explanation_field': 'rationale',
+    },
+    'same_ans1': {
+        'question_field': 'question',
+        'options_field': 'options',
+        'answer_field': 'correct',
+        'explanation_field': 'rationale',
+    },
+    'same_ans2': {
+        'question_field': 'question',
+        'options_field': 'options',
+        'answer_field': 'correct',
+        'explanation_field': 'rationale',
+    },
+    'same_ans3': {
+        'question_field': 'question',
+        'options_field': 'options',
+        'answer_field': 'correct',
+        'explanation_field': 'rationale',
+    },
+    'same_ans4': {
+        'question_field': 'question',
+        'options_field': 'options',
+        'answer_field': 'correct',
+        'explanation_field': 'rationale',
+    },
+    'same_ans5': {
         'question_field': 'question',
         'options_field': 'options',
         'answer_field': 'correct',

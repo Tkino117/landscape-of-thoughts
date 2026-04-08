@@ -1,0 +1,5 @@
+{"question": "Calculate: 6 × 3 - 8", "options": ["A) -5/2", "B) 3", "C) 10", "D) -15", "E) 1/4"], "rationale": "6 × 3 = 18. 18 - 8 = 10.", "correct": "C"}
+{"question": "Solve the equation: (5x - 8) / 7 = 6. What is x?", "options": ["A) -5/2", "B) 3", "C) 10", "D) -15", "E) 1/4"], "rationale": "Multiply both sides by 7: 5x - 8 = 42. 5x = 50. x = 10.", "correct": "C"}
+{"question": "Solve the equation: x² + 19 = 119. What is the positive value of x?", "options": ["A) -5/2", "B) 3", "C) 10", "D) -15", "E) 1/4"], "rationale": "x² = 100. x = ±10. The positive value is 10.", "correct": "C"}
+{"question": "Solve the quadratic equation: x² - 13x + 30 = 0. What is the larger solution?", "options": ["A) -5/2", "B) 3", "C) 10", "D) -15", "E) 1/4"], "rationale": "Factoring: (x - 3)(x - 10) = 0. x = 3 or x = 10. The larger solution is 10.", "correct": "C"}
+{"question": "Solve the quadratic equation: 2x² - 15x - 50 = 0. What is the larger solution?", "options": ["A) -5/2", "B) 3", "C) 10", "D) -15", "E) 1/4"], "rationale": "Using the quadratic formula: discriminant = 225 + 400 = 625 = 25². x = (15 ± 25) / 4. x = 10 or x = -5/2. The larger solution is 10.", "correct": "C"}
