@@ -608,6 +608,11 @@ def load_landscape_data(
             "dummy": 6,
             "quadratic": 6,
             "same_ans": 6,
+            "same_ans1": 6,
+            "same_ans2": 6,
+            "same_ans3": 6,
+            "same_ans4": 6,
+            "same_ans5": 6,
         }
         if distance_matrix.shape[1] != expected_dims.get(dataset):
             continue
