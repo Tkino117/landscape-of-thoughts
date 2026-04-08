@@ -522,17 +522,19 @@ def load_landscape_data(
     model: str,
     dataset: str,
     method: str = "cot",
-    ROOT: str = "./exp-data"
+    ROOT: str = "./exp-data",
+    normalize: bool = True,
 ) -> Tuple[np.ndarray, List[int], Dict[int, Dict[str, Any]]]:
     """
     Load data for landscape visualization.
-    
+
     Args:
         model (str): Model name.
         dataset (str): Dataset name.
         method (str): Method name.
         ROOT (str): Root directory for data.
-        
+        normalize (bool): If True, apply L1 normalization to distance matrix.
+
     Returns:
         Tuple containing:
             - distance_matrices: Concatenated distance matrices.
@@ -615,9 +617,10 @@ def load_landscape_data(
         # NaN を含む行を 0 で補完（パープレキシティ計算が失敗した行）
         distance_matrix = np.nan_to_num(distance_matrix, nan=0.0)
         # 各行をL1正規化（回答への距離の合計を1にする）
-        row_norms = np.linalg.norm(distance_matrix, axis=1, ord=1, keepdims=True)
-        row_norms[row_norms == 0] = 1.0  # 全要素 0 の行でゼロ除算を防止
-        distance_matrix = distance_matrix / row_norms
+        if normalize:
+            row_norms = np.linalg.norm(distance_matrix, axis=1, ord=1, keepdims=True)
+            row_norms[row_norms == 0] = 1.0  # 全要素 0 の行でゼロ除算を防止
+            distance_matrix = distance_matrix / row_norms
         # 正解の列を先頭に移動（後段の処理で先頭列=正解として扱うため）
         distance_matrix = rearrange_columns(distance_matrix, gt_idx-1)
 
