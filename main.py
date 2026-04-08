@@ -3,7 +3,7 @@ import sys
 from typing import Optional
 from fire import Fire
 
-from lot import sample, calculate, plot, plot_per_question
+from lot import sample, calculate, plot, plot_per_question, evaluate
 
 def main(
     task: str = 'all',
@@ -94,7 +94,7 @@ def main(
             print(f"====> {key}: {value}")
     
     # Validate task
-    valid_tasks = ['sample', 'calculate', 'plot', 'all']
+    valid_tasks = ['sample', 'calculate', 'plot', 'evaluate', 'all']
     if task not in valid_tasks:
         raise ValueError(f"Invalid task: {task}. Must be one of {valid_tasks}")
     
@@ -166,7 +166,22 @@ def main(
             pq_kwargs = plot_kwargs.copy()
             pq_kwargs['output_dir'] = output_dir + '_per_question'
             plot_per_question(**pq_kwargs)
-    
+
+    if task == 'evaluate' or task == 'all':
+        print("="*50)
+        print("RUNNING EVALUATION TASK")
+        print("="*50)
+
+        model_name_short = model_name.split("/")[-1] if "/" in model_name else model_name
+
+        evaluate(
+            model_name=model_name_short,
+            dataset_name=dataset_name,
+            method=method,
+            save_root=save_root,
+            output_dir=os.path.dirname(output_dir),  # figures/landscape -> figures
+        )
+
     print("="*50)
     print("ALL TASKS COMPLETED")
     print("="*50)
