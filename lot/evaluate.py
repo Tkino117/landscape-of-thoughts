@@ -37,6 +37,40 @@ def _extract_stages_gt(rows_list, weights_list):
     return stages
 
 
+def _extract_stages_full(rows_list, weights_list):
+    """5次元空間全体の平均ベクトルと分散スカラーを、パーセンタイル5段階で返す。
+    rows_list, weights_list が空なら None を返す。"""
+    if not rows_list:
+        return None
+
+    rows = np.concatenate(rows_list)         # (M, num_answers)
+    weights = np.concatenate(weights_list)    # (M,)
+
+    thresholds = np.percentile(weights, [20, 40, 60, 80])
+    stages = []
+    for stage_idx in range(5):
+        if stage_idx == 0:
+            mask = weights <= thresholds[0]
+        elif stage_idx == 4:
+            mask = weights > thresholds[3]
+        else:
+            mask = (weights > thresholds[stage_idx - 1]) & (weights <= thresholds[stage_idx])
+
+        vecs = rows[mask]  # (n, num_answers)
+        if len(vecs) > 0:
+            mean_vec = np.mean(vecs, axis=0)  # (num_answers,)
+            dists = np.linalg.norm(vecs - mean_vec, axis=1)  # 各点から平均までの距離
+            var_scalar = float(np.var(dists))  # ユークリッド距離の分散
+            stages.append({
+                "mean": [round(float(v), 6) for v in mean_vec],
+                "var": round(var_scalar, 6),
+                "count": int(len(vecs)),
+            })
+        else:
+            stages.append({"mean": None, "var": None, "count": 0})
+    return stages
+
+
 def evaluate(
     model_name: str = "Meta-Llama-3-8B-Instruct-Lite",
     dataset_name: str = "aqua",
@@ -103,14 +137,17 @@ def evaluate(
         per_question[str(sample_idx)] = {
             "correct": {
                 "stages_gt": _extract_stages_gt(correct_rows, correct_weights),
+                "stages_full": _extract_stages_full(correct_rows, correct_weights),
                 "num_chains": num_correct,
             },
             "incorrect": {
                 "stages_gt": _extract_stages_gt(incorrect_rows, incorrect_weights),
+                "stages_full": _extract_stages_full(incorrect_rows, incorrect_weights),
                 "num_chains": num_incorrect,
             },
             "all": {
                 "stages_gt": _extract_stages_gt(all_rows, all_weights),
+                "stages_full": _extract_stages_full(all_rows, all_weights),
                 "num_chains": len(all_answers),
             },
         }
@@ -134,6 +171,8 @@ def evaluate(
     # --- プロット: 3種類それぞれ別ファイル ---
     for category in ("correct", "incorrect", "all"):
         _plot_stages(per_question, category, eval_dir, model_name, dataset_name, method)
+        _plot_stages_var(per_question, category, eval_dir, model_name, dataset_name, method)
+        _plot_stages_var_gt(per_question, category, eval_dir, model_name, dataset_name, method)
 
     return result
 
@@ -163,6 +202,64 @@ def _plot_stages(per_question: dict, category: str, eval_dir: str,
     ax.grid(True, alpha=0.3)
 
     save_path = os.path.join(eval_dir, f"{model_name}-{dataset_name}-{method}-eval-{category}.png")
+    fig.savefig(save_path, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"==> Plot saved to: {save_path}")
+
+
+def _plot_stages_var(per_question: dict, category: str, eval_dir: str,
+                     model_name: str, dataset_name: str, method: str):
+    """各質問の5段階の分散（点群の広がり）を折れ線グラフでプロットする。"""
+    stage_labels = ["0-20%", "20-40%", "40-60%", "60-80%", "80-100%"]
+    x = np.arange(len(stage_labels))
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+
+    for q_idx, q_data in sorted(per_question.items(), key=lambda kv: int(kv[0])):
+        stages = q_data[category]["stages_full"]
+        if stages is None:
+            continue
+        vars_ = [s["var"] if s["var"] is not None else 0 for s in stages]
+        ax.plot(x, vars_, marker="o", label=f"Q{q_idx}")
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(stage_labels)
+    ax.set_xlabel("Reasoning progress")
+    ax.set_ylabel("Variance of distance to centroid")
+    ax.set_title(f"{model_name} / {dataset_name} / {method}  [{category}] (spread)")
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+    save_path = os.path.join(eval_dir, f"{model_name}-{dataset_name}-{method}-eval-{category}-var.png")
+    fig.savefig(save_path, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"==> Plot saved to: {save_path}")
+
+
+def _plot_stages_var_gt(per_question: dict, category: str, eval_dir: str,
+                        model_name: str, dataset_name: str, method: str):
+    """各質問の5段階の正解次元方向の分散を折れ線グラフでプロットする。"""
+    stage_labels = ["0-20%", "20-40%", "40-60%", "60-80%", "80-100%"]
+    x = np.arange(len(stage_labels))
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+
+    for q_idx, q_data in sorted(per_question.items(), key=lambda kv: int(kv[0])):
+        stages = q_data[category]["stages_gt"]
+        if stages is None:
+            continue
+        vars_ = [s["var"] if s["var"] is not None else 0 for s in stages]
+        ax.plot(x, vars_, marker="o", label=f"Q{q_idx}")
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(stage_labels)
+    ax.set_xlabel("Reasoning progress")
+    ax.set_ylabel("Variance (ground-truth direction)")
+    ax.set_title(f"{model_name} / {dataset_name} / {method}  [{category}] (gt spread)")
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+    save_path = os.path.join(eval_dir, f"{model_name}-{dataset_name}-{method}-eval-{category}-var-gt.png")
     fig.savefig(save_path, dpi=150, bbox_inches="tight")
     plt.close(fig)
     print(f"==> Plot saved to: {save_path}")
