@@ -1,3 +1,12 @@
+> **Note:** This is a fork of [tmlr-group/landscape-of-thoughts](https://github.com/tmlr-group/landscape-of-thoughts).
+> This fork investigates whether differences in problem difficulty are reflected in the LLM reasoning process (LoT landscape).
+> To enable fair comparison, all problems share the same correct answer and the same set of five choices, unifying the distance space across questions.
+>
+> **概要:** 問題の難易度の差が LLM の思考過程（LoT landscape）に現れるかを検証するフォークです。
+> すべての問題で正解と5つの選択肢を統一し、選択肢の距離空間を揃えることで、思考軌跡の公平な比較を可能にしています。
+
+---
+
 <div align="center">
 
 <h1>Landscape of Thoughts</h1>
