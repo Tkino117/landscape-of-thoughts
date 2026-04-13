@@ -22,7 +22,8 @@ class JsonDataset(BaseDataset):
         explanation_field: Optional[str] = None,
         is_jsonl: bool = True,
         options_format: Optional[Callable] = None,
-        dataset_name: Optional[str] = None
+        dataset_name: Optional[str] = None,
+        options_separator: str = '\n'
     ):
         """
         Initialize the JSON dataset.
@@ -56,7 +57,8 @@ class JsonDataset(BaseDataset):
         self.explanation_field = explanation_field
         self.is_jsonl = is_jsonl
         self.options_format = options_format
-        
+        self.options_separator = options_separator
+
         # Prompt information (will be set by dataset_loader)
         self.prompts = {}
         self.answer_pattern = r'A|B|C|D|E'
@@ -177,7 +179,8 @@ class JsonDataset(BaseDataset):
         options = item.get("options", [])
         
         if options:
-            return f"{question}\nOptions: {' '.join(options)}"
+            sep = self.options_separator
+            return f"{question}\nOptions: {sep.join(options)}"
         else:
             return question
     
