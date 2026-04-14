@@ -176,6 +176,15 @@ def evaluate(
         _plot_stages_var(per_question, category, eval_dir, model_name, dataset_name, method)
         _plot_stages_var_gt(per_question, category, eval_dir, model_name, dataset_name, method)
 
+    # --- 詳細 JSON ---
+    evaluate_detail(
+        model_name=model_name,
+        dataset_name=dataset_name,
+        method=method,
+        save_root=save_root,
+        output_dir=output_dir,
+    )
+
     return result
 
 
@@ -236,6 +245,134 @@ def _plot_stages_var(per_question: dict, category: str, eval_dir: str,
     fig.savefig(save_path, dpi=150, bbox_inches="tight")
     plt.close(fig)
     print(f"==> Plot saved to: {save_path}")
+
+
+def _weight_to_bin(weight, thresholds):
+    """weight と percentile 閾値からビンラベルを返す。"""
+    labels = ["0-20%", "20-40%", "40-60%", "60-80%", "80-100%"]
+    if weight <= thresholds[0]:
+        return labels[0]
+    elif weight <= thresholds[1]:
+        return labels[1]
+    elif weight <= thresholds[2]:
+        return labels[2]
+    elif weight <= thresholds[3]:
+        return labels[3]
+    else:
+        return labels[4]
+
+
+def evaluate_detail(
+    model_name: str = "Meta-Llama-3-8B-Instruct-Lite",
+    dataset_name: str = "aqua",
+    method: str = "cot",
+    save_root: str = "exp-data",
+    output_dir: str = "figures",
+) -> dict:
+    """
+    各ステップのテキスト・距離値・ビン所属を一覧する詳細 JSON を出力する。
+
+    出力:
+        output_dir/evaluation/{model}-{dataset}-{method}-detail.json
+    """
+    # --- 正規化/raw 両方の距離行列を読み込み ---
+    dm_norm, n_list_norm, plot_datas_norm = load_landscape_data(
+        model=model_name, dataset=dataset_name, method=method,
+        ROOT=save_root, normalize=True,
+    )
+    dm_raw, n_list_raw, _ = load_landscape_data(
+        model=model_name, dataset=dataset_name, method=method,
+        ROOT=save_root, normalize=False,
+    )
+
+    per_q_dm_norm = split_list(n_list_norm, dm_norm)
+    per_q_dm_raw = split_list(n_list_raw, dm_raw)
+
+    # --- thoughts JSON からステップテキストを読み込み ---
+    thoughts_dir = os.path.join(save_root, dataset_name, "thoughts")
+    thoughts_texts = {}  # sample_idx -> list of (texts, answer, correct)
+    question_texts = {}
+    answer_labels = {}
+    for sample_idx in sorted(plot_datas_norm.keys()):
+        fname = f"{model_name}--{method}--{dataset_name}--{sample_idx}.json"
+        fpath = os.path.join(thoughts_dir, fname)
+        with open(fpath, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        thoughts_texts[sample_idx] = [
+            (thoughts, ans, correct)
+            for thoughts, ans, correct in data["trial_thoughts"]
+        ]
+        question_texts[sample_idx] = data.get("model_input", "")
+        answer_labels[sample_idx] = data.get("answers", [])
+
+    # --- 各質問・各 trial の詳細を構築 ---
+    questions = {}
+    for i, sample_idx in enumerate(sorted(plot_datas_norm.keys())):
+        pd = plot_datas_norm[sample_idx]
+        num_thoughts_each_chain = pd["num_thoughts_each_chain"]
+        all_answers = pd["all_answers"]
+        answer_gt = pd["answer_gt_short"]
+
+        dm_n = np.array(per_q_dm_norm[i])[:-1]  # Start 行を除く
+        dm_r = np.array(per_q_dm_raw[i])[:-1]
+
+        # weight 計算（全 trial 結合）
+        all_weights = []
+        for length in num_thoughts_each_chain:
+            all_weights.append(np.linspace(0, 1, length))
+        concat_weights = np.concatenate(all_weights)
+        thresholds = np.percentile(concat_weights, [20, 40, 60, 80])
+
+        # trial ごとにステップ詳細を構築
+        trials = []
+        offset = 0
+        for chain_idx, length in enumerate(num_thoughts_each_chain):
+            step_texts = thoughts_texts[sample_idx][chain_idx][0]
+            weights = np.linspace(0, 1, length)
+            steps = []
+            for s in range(length):
+                steps.append({
+                    "step_idx": s,
+                    "text": step_texts[s] if s < len(step_texts) else "",
+                    "weight": round(float(weights[s]), 6),
+                    "bin": _weight_to_bin(weights[s], thresholds),
+                    "dist_normalized": [round(float(v), 6) for v in dm_n[offset + s]],
+                    "dist_raw": [round(float(v), 6) for v in dm_r[offset + s]],
+                })
+            trials.append({
+                "trial_idx": chain_idx,
+                "num_steps": length,
+                "final_answer": all_answers[chain_idx],
+                "correct": all_answers[chain_idx] == answer_gt,
+                "steps": steps,
+            })
+            offset += length
+
+        questions[str(sample_idx)] = {
+            "question_text": question_texts[sample_idx],
+            "answer_gt": answer_gt,
+            "answers": answer_labels[sample_idx],
+            "bin_thresholds": [round(float(t), 6) for t in thresholds],
+            "trials": trials,
+        }
+
+    result = {
+        "model": model_name,
+        "dataset": dataset_name,
+        "method": method,
+        "num_questions": len(questions),
+        "questions": questions,
+    }
+
+    # --- 出力 ---
+    eval_dir = os.path.join(output_dir, "evaluation")
+    os.makedirs(eval_dir, exist_ok=True)
+    save_path = os.path.join(eval_dir, f"{model_name}-{dataset_name}-{method}-detail.json")
+    with open(save_path, "w", encoding="utf-8") as f:
+        json.dump(result, f, indent=2, ensure_ascii=False)
+    print(f"==> Detail saved to: {save_path}")
+
+    return result
 
 
 def _plot_stages_var_gt(per_question: dict, category: str, eval_dir: str,

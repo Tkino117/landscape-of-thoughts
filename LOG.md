@@ -39,3 +39,9 @@ aggregate_evaluate(
 )
 ```
 
+## 出力の詳細を追えるようにする
+- evaluate() に figures/{dataset}/evaluation/*detail.json の出力を追加
+  - 全出力と、そのパーセンタイル、各答えへの距離がまとまっている
+- scripts/show_detail.py
+  - 上をみやすく整形して csv で出力
+
