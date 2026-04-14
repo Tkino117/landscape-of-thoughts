@@ -59,8 +59,7 @@ def _extract_stages_full(rows_list, weights_list):
         vecs = rows[mask]  # (n, num_answers)
         if len(vecs) > 0:
             mean_vec = np.mean(vecs, axis=0)  # (num_answers,)
-            dists = np.linalg.norm(vecs - mean_vec, axis=1)  # 各点から平均までの距離
-            var_scalar = float(np.var(dists))  # ユークリッド距離の分散
+            var_scalar = float(np.trace(np.cov(vecs, rowvar=False)))  # 全分散 (trace of covariance)
             stages.append({
                 "mean": [round(float(v), 6) for v in mean_vec],
                 "var": round(var_scalar, 6),
@@ -236,7 +235,7 @@ def _plot_stages_var(per_question: dict, category: str, eval_dir: str,
     ax.set_xticks(x)
     ax.set_xticklabels(stage_labels)
     ax.set_xlabel("Reasoning progress")
-    ax.set_ylabel("Variance of distance to centroid")
+    ax.set_ylabel("Total variance (trace)")
     ax.set_title(f"{model_name} / {dataset_name} / {method}  [{category}] (spread)")
     ax.legend()
     ax.grid(True, alpha=0.3)
