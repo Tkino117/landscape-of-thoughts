@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for i in 2 3 4 5; do
+for i in 1 2 3 4 5; do
   python main.py \
     --task all \
     --model_name Qwen/Qwen2.5-3B-Instruct \
