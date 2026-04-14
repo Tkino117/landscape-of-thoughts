@@ -40,7 +40,7 @@ def main():
             for step in trial["steps"]:
                 if args.bin and step["bin"] != args.bin:
                     continue
-                rows.append({
+                row = {
                     "question": int(q_idx),
                     "trial": trial["trial_idx"],
                     "correct": trial["correct"],
@@ -48,13 +48,19 @@ def main():
                     "step": step["step_idx"],
                     "bin": step["bin"],
                     "weight": step["weight"],
-                    "d_gt_norm": step["dist_normalized"][0],
-                    "d_gt_raw": step["dist_raw"][0],
-                    "text": step["text"],
-                })
+                }
+                for di, v in enumerate(step["dist_normalized"]):
+                    row[f"d{di}_norm"] = v
+                for di, v in enumerate(step["dist_raw"]):
+                    row[f"d{di}_raw"] = v
+                row["text"] = step["text"]
+                rows.append(row)
 
+    # 次元数はデータから取得（aqua/commonsenseqa=5, mmlu=4, strategyqa=2）
+    n_dims = len(next(iter(data["questions"].values()))["trials"][0]["steps"][0]["dist_normalized"])
+    dist_fields = [f"d{i}_norm" for i in range(n_dims)] + [f"d{i}_raw" for i in range(n_dims)]
     fieldnames = ["question", "trial", "correct", "num_steps", "step", "bin", "weight",
-                  "d_gt_norm", "d_gt_raw", "text"]
+                  *dist_fields, "text"]
     with open(out_path, "w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
