@@ -26,18 +26,9 @@
 
 ## 複数データの平均を取る
 - same_ans1-5 の平均を取る関数、aggregate_evaluate() を lot/aggregate.py に作成
-- 実行法：
-```
-from lot.aggregate import aggregate_evaluate
-
-aggregate_evaluate(
-    dataset_names=["same_ans1", "same_ans2", "same_ans3", "same_ans4", "same_ans5"],
-    model_name="Qwen2.5-3B-Instruct",
-    method="cot",
-    input_dir="figures",
-    output_dir="figures/same_ans_avg",
-)
-```
+- scripts/aggregate.py にスクリプトを作成
+  - 実行法
+    - python scripts/aggregate.py
 
 ## 出力の詳細を追えるようにする
 - evaluate() に figures/{dataset}/evaluation/*detail.json の出力を追加
